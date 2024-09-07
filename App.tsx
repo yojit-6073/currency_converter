@@ -1,52 +1,60 @@
 import { FlatList, Pressable, SafeAreaView, StyleSheet, Text, TextInput, View } from 'react-native'
 import React, {useState} from 'react'
-import CurrencyButton from './components/currencyButton'
+import CurrencyButton from './currencyButton'
 import { currencyByRupee } from './constants'
-import Snackbar from 'react-native-snackbar'
+import Toast from 'react-native-root-toast'; //Always use toast instead of snackbar
 import { StatusBar } from 'expo-status-bar'
 
-
-const App= (): JSX.Element => {
+const App = (): JSX.Element => {
   const [inputValue, setInputValue] = useState('');
   const [resultValue, setResultValue] = useState('');
   const [currencyValue, setCurrencyValue] = useState('');
 
   const buttonPressed = (targetValue: Currency) => {
     if(!inputValue){
-      return Snackbar.show({
-        text: "Enter a value to convert",
-        backgroundColor: "#EA7773",
-        textColor: "#000000"
-      })
+      return Toast.show("Enter a value to convert", {
+        duration: Toast.durations.LONG,
+        position: Toast.positions.BOTTOM,
+        backgroundColor: "#EA7773", 
+        textColor: "#000000", 
+        shadow: true,
+        animation: true,
+        hideOnPress: true,
+      });
     }
+
     const inputAmount = parseFloat(inputValue);
     if(!isNaN(inputAmount)){
-      const convertedValue = inputAmount*targetValue.value;
-      const result = `${targetValue.symbol} ${targetValue.value.toFixed(2)}`;
+      const convertedValue = inputAmount * targetValue.value;
+      const result = `${targetValue.symbol} ${convertedValue.toFixed(2)}`;
       setResultValue(result);
       setCurrencyValue(targetValue.name);
+    } else {
+      return Toast.show("Enter a valid number", {
+        duration: Toast.durations.LONG,
+        position: Toast.positions.BOTTOM,
+        backgroundColor: "#F4BE2C", 
+        textColor: "#000000", 
+        animation: true,
+        hideOnPress: true,
+      });
     }
-    else{
-      return Snackbar.show({
-        text: "Enter a valid number",
-        backgroundColor: "#F4BE2C",
-        textColor: "#000000"
-      })
-    }
-  }
+  };
+
   return ( 
     <>
-      <StatusBar/>
+      <StatusBar />
       <View style={styles.container}>
         <View style={styles.topContainer}>
           <View style={styles.rupeesContainer}>
             <Text style={styles.rupee}>₹</Text>
             <TextInput
-            maxLength={14}
-            value={inputValue}
-            onChangeText={setInputValue}
-            keyboardType='numeric'
-            placeholder='Enter amount in rupees' 
+              maxLength={14}
+              value={inputValue}
+              onChangeText={setInputValue}
+              keyboardType='numeric'
+              placeholder='Enter amount in rupees' 
+              style={styles.inputAmountField} 
             />
           </View>
           {resultValue && (
@@ -55,25 +63,28 @@ const App= (): JSX.Element => {
             </Text>
           )}
         </View>
-        <View style = {styles.bottomContainer}>
+        <View style={styles.bottomContainer}>
           <FlatList 
-          numColumns={3}
-          keyExtractor={item => item.name}
-          data={currencyByRupee}
-          renderItem={({item}) => (
-            <Pressable style={[styles.button,
-              currencyValue === item.name && styles.selected
-            ]}>
-              <CurrencyButton {...item} />
-            </Pressable>
-
-          )}
+            numColumns={3}
+            keyExtractor={item => item.name}
+            data={currencyByRupee}
+            renderItem={({item}) => (
+              <Pressable 
+                style={[
+                  styles.button, 
+                  currencyValue === item.name && styles.selected
+                ]}
+                onPress={() => buttonPressed(item)} 
+              >
+                <CurrencyButton {...item} />
+              </Pressable>
+            )}
           />
         </View>
       </View>
     </>
-  )
-}
+  );
+};
 
 const styles = StyleSheet.create({
   container: {
@@ -92,7 +103,6 @@ const styles = StyleSheet.create({
   },
   rupee: {
     marginRight: 8,
-
     fontSize: 22,
     color: '#000000',
     fontWeight: '800',
@@ -114,10 +124,8 @@ const styles = StyleSheet.create({
   },
   button: {
     flex: 1,
-
     margin: 12,
     height: 60,
-
     borderRadius: 12,
     backgroundColor: '#fff',
     elevation: 2,
@@ -132,6 +140,6 @@ const styles = StyleSheet.create({
   selected: {
     backgroundColor: '#ffeaa7',
   },
-})
+});
 
 export default App;
